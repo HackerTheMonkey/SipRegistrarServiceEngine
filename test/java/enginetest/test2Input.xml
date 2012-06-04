@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope 
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:part="http://www.sun.com/jbi/examples/sample-service/greetings/">       
+   <soapenv:Header/>
+   <soapenv:Body>
+      <part:userPart xmlns:greet="http://www.sun.com/jbi/examples/sample-service/greetings/types/">
+         <greet:first-name>Srinivasan</greet:first-name>
+         <greet:last-name>Chikkala</greet:last-name>
+      </part:userPart>
+   </soapenv:Body>
+</soapenv:Envelope>

@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<project name="testSA" default="default" basedir="." xmlns:jbi="http://www.sun.com/ns/jbi/jbi-ant/1" > 
+    
+    <target name="default" depends="package" description="compiles and packages the project."/>
+    
+    <target name="-pre-init">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the build.xml file. -->
+    </target>
+    
+    <target name="-init-user" depends="-pre-init" >
+        <echo message="loading user properties from ${user.properties.file}" />
+        <property file="${user.properties.file}"/>
+    </target>
+    
+    <target name="-init-project" depends="-pre-init, -init-user" >
+        <echo level="debug" message="loading build.properties" />
+        <property file="build.properties"/>
+    </target>
+    
+    <target name="-do-init" depends="-pre-init, -init-user, -init-project" >
+        <echo level="debug" message="-do-init called to initialize the build properties " />
+        <property name="build.service.assembly.dir" location="${build.dir}/${service.assembly.name}" />
+        <property name="build.service.assembly.zip" location="${build.dir}/${service.assembly.name}.zip" />        
+    </target>
+        
+    <target name="-init-check" depends="-pre-init, -init-user, -init-project, -do-init">
+        <fail unless="src.dir">Must set src.dir</fail>
+        <fail unless="build.dir">Must set build.dir</fail>
+        <fail unless="service.assembly.name">Must set service.assembly.name</fail>
+    </target>
+    
+    <target name="-init-su-macros" 
+        depends="-pre-init, -init-user, -init-project, -do-init" >
+        
+        <macrodef name="jbi-su-package" uri="http://www.sun.com/ns/jbi/jbi-ant/1">
+            <attribute name="suDir"/>
+            <attribute name="suName"/>
+            <element name="target-options" optional="true"/>
+            <sequential>
+                <ant inheritAll="false" antfile="@{suDir}/build.xml">
+                    <property name="build.dir" location="${build.dir}" />
+                    <property name="service.unit.name" value="@{suName}" />
+                    <target-options/>
+                    <target name="package"/>
+                </ant>
+                <echo level="debug" message ="Copying service unit @{suName} to SA build dir ${build.service.assembly.dir}" />
+                <copy file="${build.dir}/@{suName}.zip" todir="${build.service.assembly.dir}" overwrite="true" />                 
+            </sequential>
+        </macrodef>        
+        
+        <macrodef name="jbi-su-clean" uri="http://www.sun.com/ns/jbi/jbi-ant/1">
+            <attribute name="suDir"/>
+            <attribute name="suName"/>
+            <element name="target-options" optional="true"/>
+            <sequential>
+                <ant inheritAll="false" antfile="@{suDir}/build.xml">
+                    <property name="build.dir" location="${build.dir}" />
+                    <property name="service.unit.name" value="@{suName}" />
+                    <target-options/>
+                    <target name="clean"/>
+                </ant>
+            </sequential>
+        </macrodef>        
+        
+    </target>
+
+    <!-- Init project -->
+    <target name="init" 
+        depends="-pre-init, -init-user, -init-project, -do-init, -init-check, -init-su-macros"
+        description="initilizes the build settings">
+    </target>
+    
+    <!--
+    ===================
+    COMPILATION SECTION
+    ===================
+    -->    
+    <target name="deps-package" depends="init" unless="no.deps">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${build.service.assembly.dir}"/>
+        <!-- for each testSU  package -->        
+        <!-- package testSUBC -->
+        <jbi:jbi-su-package suDir="${project.testSUBC}" suName="${service.unit.name.testSUBC}" />
+        <!-- package testSUSE -->
+        <jbi:jbi-su-package suDir="${project.testSUSE}" suName="${service.unit.name.testSUSE}" />
+    </target>
+        
+    <!-- SA Compile target -->
+    <target  name="compile" depends="init, deps-package" description="Compile Service Assembly">
+        <echo level="debug" message ="Compiling Service Assembly" />
+        <mkdir dir="${build.service.assembly.dir}"/>
+        <copy file="${src.dir}/META-INF/jbi.xml" todir="${build.service.assembly.dir}/META-INF" overwrite="true" />
+    </target>
+
+    <!--
+    ===================
+    PACKAGING SECTION
+    ===================
+    -->       
+    <target  name="-pre-package" depends="init, deps-package" 
+    description="Copy the deps su to the build dir">
+    </target>
+               
+    <!-- SA Package target -->
+    <target  name="package" depends="init, compile, -pre-package" 
+    description="Package the Service Assembly">
+        <echo level="debug" message ="Packaging Service Assembly" />
+        <zip destfile="${build.service.assembly.zip}" basedir="${build.service.assembly.dir}" />
+    </target>
+        
+    <!--
+    ===============
+    CLEANUP SECTION
+    ===============
+    -->
+    <target name="deps-clean" depends="init" unless="no.deps">
+        <!-- clean testSUBC -->
+        <jbi:jbi-su-clean suDir="${project.testSUBC}" suName="${service.unit.name.testSUBC}" />
+        <!-- clean testSUSE -->
+        <jbi:jbi-su-clean suDir="${project.testSUSE}" suName="${service.unit.name.testSUSE}" />        
+    </target>
+        
+    <!-- Clean target -->
+    <target  name="clean" depends="init, deps-clean" 
+    description="Clean the Service Assembly" >       
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/> 
+        <echo level="debug" message ="Cleaned Service Assembly" />       
+    </target>    
+            
+    <!-- Help target -->
+    <target  name="help" depends="init" description="Display Help on Service Assembly">
+        <echo message ="Builds  Service Assembly ${dist.zip}" />
+    </target>
+        
+</project>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+*** GENERATED FROM netbeans IDE project - DO NOT EDIT  ***
+***         EDIT ./m2nbbuild.xml INSTEAD         ***
+-->
+<!-- NOTE: this file is only used in m2nbbuild.xml to build the netbeans project 
+from Maven2 build lifecycle. It will be re-generated/updated from netbeans IDE  
+when the project is opened in the IDE.  
+
+-->
+<project name="m2nbbuild-impl" default="package" basedir="." 
+         xmlns:mvn2nb ="http://www.netbeans.org/ns/mvn2nb/1" 
+         xmlns:mvn="urn:maven-artifact-ant" >
+    <description>This project compile, package and test the JBI Components when invoked from Maven2.</description>
+    
+    <target name="default" depends="test, package" description="Build and test whole project."/>
+    
+    <target name="-pre-init">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ./m2nbbuild.xml file. -->
+    </target>
+    
+    <target name="-do-init" depends="-pre-init" >
+        <!-- load maven-ant-tasks-2.0.7 task definitions -->                
+        <typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="urn:maven-artifact-ant" classpathref="maven.runtime.classpath"/> 
+        <!-- load this project's pom.xml -->
+        <mvn:pom file="pom.xml" id="mvn.prj"/>
+        <!-- load this project's netbeans project properties -->
+        <property file="nbproject/project.properties" prefix="nb.prj"/>
+        <!-- maven distribution jar file path -->
+        <property name="mvn.prj.dist.jar.resolved" location="${mvn.prj.build.directory}/${mvn.prj.build.finalName}.${mvn.prj.packaging}" />
+        <!-- netbeans project distribution jar file path -->
+        <property name="nb.prj.dist.jar.resolved" location="${nb.prj.dist.jar}" />        
+        <!-- 
+        this macro executes a particular target in the netbeans project build 
+        script as if it is invoked from the command line. It sets the user.properties.file
+        to the m2nbbuild.properties which will have the required build properties set for 
+        building the netbeans project from command line.        
+        The content of the m2nbbuild.properties resolves any properties that will be passed
+        through build.properties in the netbeans user.dir when the project is executed from 
+        inside the IDE.        
+        Users can set all the libraries classpaths w.r.t local maven repository in the 
+        m2nbbuild.properties
+        -->        
+        <macrodef name="nbbuild" uri="http://www.netbeans.org/ns/mvn2nb/1">
+            <attribute name="target" default="default"/>
+            <sequential>
+                <echo message="Executing netbeans build target @{target}"/>
+                <ant inheritAll="false" inheritRefs="false" target="@{target}" >
+                    <property name="user.properties.file" location="m2nbbuild.properties" />
+                    <property name="m2nbbuild.setup" value="true" />
+                </ant>
+            </sequential>
+        </macrodef>
+        
+    </target>
+    
+    <target name="-init-check" depends="-pre-init, -do-init">
+    </target>
+    
+    <target name="-post-init">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ./m2nbbuild.xml file. -->
+    </target>
+    
+    <!-- initilizes the build settings -->
+    <target name="init" 
+            depends="-pre-init, -do-init, -post-init, -init-check" >
+    </target>  
+    
+    <target name="compile" depends="init"  
+            description="compiles jbi component source" >
+        <mvn2nb:nbbuild target="compile" />
+    </target>
+    
+    <target name="package" depends="init" 
+            description="compile and packages jbi component sources into installer zip archive file" >
+        <mvn2nb:nbbuild target="jar" />
+        <copy overwrite="true" 
+              file="${nb.prj.dist.jar.resolved}"
+              toFile="${mvn.prj.dist.jar.resolved}" />
+    </target>  
+    
+    <target name="-do-clean" depends="init">
+        <mvn2nb:nbbuild target="clean" />
+    </target>
+
+    <target name="-post-clean">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    
+    <target name="clean" depends="init, -do-clean, -post-clean" description="clean up" />
+        
+    <!-- testing the JBI Component -->
+  
+    <target name="test-compile" depends="init"  
+            description="compile the test source " >
+        <mvn2nb:nbbuild target="compile-test" />
+    </target>
+    
+    <!-- run junit tests -->
+        
+    <target name="test" depends="init" 
+            description="run unit tests on the jbi component" >
+        <!--
+            <mvn2nb:nbbuild target="test" />
+        -->
+    </target>
+    
+    <!-- run integration tests -->
+    
+    <target name="integration-test" depends="init"
+            description="run integration tests on the jbi component" >
+        <!--
+            <mvn2nb:nbbuild target="integration-test" />
+        -->
+        <mvn2nb:nbbuild target="install" />
+        <mvn2nb:nbbuild target="test" />
+        <mvn2nb:nbbuild target="uninstall" />
+    </target>
+    
+</project>

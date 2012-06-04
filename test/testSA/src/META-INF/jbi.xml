@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jbi version="1" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns="http://java.sun.com/xml/ns/jbi"
+xmlns:greet="http://www.sun.com/jbi/examples/sample-service/greetings/"
+>
+    <service-assembly>
+        <identification>
+            <name>SipRegistrarServiceEngine_TestSA</name>
+            <description>This is a test Service Assembly to test Engine</description>
+        </identification>
+                
+        <service-unit>
+            <identification>
+                <name>SipRegistrarServiceEngine_TestSUBC</name>
+                <description>This service unit enables soap inbound endpoint for a service in service engine</description>
+            </identification>
+            <target>
+                <artifacts-zip>testSUBC.zip</artifacts-zip>
+                <component-name>sun-http-binding</component-name>
+            </target>
+        </service-unit>   
+        <service-unit>
+            <identification>
+                <name>SipRegistrarServiceEngine_TestSUSE</name>
+                <description>This service unit enables greetings service provider in service engine</description>
+            </identification>
+            <target>
+                <artifacts-zip>testSUSE.zip</artifacts-zip>
+                <component-name>SipRegistrarServiceEngine</component-name>
+            </target>
+        </service-unit>        
+    <connections>
+        <connection>
+            <consumer endpoint-name="port" service-name="greet:greetService"/>
+            <provider endpoint-name="SipRegistrarServiceEngine_JBIPort" service-name="greet:greetService"/>
+        </connection>        
+    </connections>
+
+    </service-assembly>        
+</jbi>

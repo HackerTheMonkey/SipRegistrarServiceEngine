@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<!--
+This maven project is configured to invoke netbeans ant build script to build and test the netbeans jbi component
+project created using the Netbeans IDE. It configures the maven antrun plugin to invoke the netbeans project
+build scripts at various phases of the maven build lifecycle(compile, test-compile, test, package, integration-test).
+-->
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>open-jbi-components</groupId>
+    <artifactId>SipRegistrarServiceEngine</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>JBI Component[SipRegistrarServiceEngine]</name>
+    <description>Maven project for JBI Component that contains the 
+    maven and netbeans build setup and component code to build and test the JBI Component.</description>
+    <url>http://open-esb.org</url>
+    <build>
+        <directory>build</directory>
+        <sourceDirectory>src/java</sourceDirectory>
+        <testSourceDirectory>test/java</testSourceDirectory>        
+        <outputDirectory>build/classes</outputDirectory>
+        <testOutputDirectory>build/test/classes</testOutputDirectory>
+        <defaultGoal>package</defaultGoal>        
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                    <!-- DISABLE COMPILER PLUGIN AS ANT RUN WOULD COMPILE THE CODE -->
+                    <excludes>
+                        <exclude>**/*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2-SNAPSHOT</version>
+                <configuration>
+                    <!-- DISABLE JAR PLUGIN AS ANT RUN WOULD PACKAGE THE CODE -->
+                    <excludes>
+                        <exclude>**/*.*</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>            
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.1.3</version>
+                <inherited>true</inherited>
+                <configuration>
+                    <!-- DISABLE SUREFILE PLUGIN AS ANT RUN WOULD TEST THE CODE -->
+                    <skip>true</skip>
+                    <excludes>
+                        <exclude>**/bindingtest/*.java</exclude>
+                        <exclude>**/enginetest/*.java</exclude>
+                    </excludes>                    
+                </configuration>
+            </plugin>            
+            <plugin>
+                <!-- configure antrun plugin to invoke netbeans project build scripts for
+                various phases of the project -->
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.2-SNAPSHOT</version>
+                <executions>       
+                    <execution>
+                        <id>m2nbbuild-compile</id>
+                        <phase>compile</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <tasks>      
+                                <ant antfile="m2nbbuild.xml" inheritAll="false" inheritRefs="true" target="compile" />
+                            </tasks>
+                        </configuration>                        
+                    </execution>       
+                    <execution>
+                        <id>m2nbbuild-compile-test</id>
+                        <phase>test-compile</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <tasks>
+                                <ant antfile="m2nbbuild.xml" inheritAll="false" inheritRefs="true" target="test-compile" />                                
+                            </tasks>
+                        </configuration>                        
+                    </execution>                                        
+                    <execution>
+                        <id>m2nbbuild-package</id>
+                        <phase>package</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <tasks>
+                                <ant antfile="m2nbbuild.xml" inheritAll="false" inheritRefs="true" target="package" />
+                            </tasks>
+                        </configuration>                        
+                    </execution>       
+                    <execution>
+                        <id>m2nbbuild-utest</id>
+                        <phase>test</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <tasks>
+                                <ant antfile="m2nbbuild.xml" inheritAll="false" inheritRefs="true" target="test" />     
+                            </tasks>
+                        </configuration>                        
+                    </execution>                       
+                    <execution>
+                        <id>m2nbbuild-itest</id>
+                        <phase>integration-test</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <tasks>
+                                <ant antfile="m2nbbuild.xml" inheritAll="false" inheritRefs="true" target="integration-test" />
+                            </tasks>
+                        </configuration>                        
+                    </execution>   
+                    <execution>
+                        <id>m2nbbuild-clean</id>
+                        <phase>clean</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <tasks>
+                            <ant antfile="m2nbbuild.xml" inheritAll="false" inheritRefs="true" target="clean" />                            </tasks>
+                        </configuration>                        
+                    </execution> 
+                </executions>
+                <dependencies>
+                    <!-- 
+                        These dependencies are required in the antrun plugin classpath so that the ant script
+                        defining the optional or junit ant tasks will have these jars available in the ant 
+                        main classpath.                    
+                    -->
+                    <dependency>
+                        <groupId>ant</groupId>
+                        <artifactId>ant-nodeps</artifactId>
+                        <version>1.6.5</version>
+                    </dependency>                    
+                    <dependency>
+                        <groupId>ant</groupId>
+                        <artifactId>ant-junit</artifactId>
+                        <version>1.6.5</version>
+                        <scope>test</scope>
+                    </dependency>                                                
+                    <dependency>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                        <version>3.8.2</version>
+                        <scope>test</scope>
+                    </dependency>
+                </dependencies>    
+            </plugin>
+        </plugins>
+    </build>    
+    <repositories>
+        <!-- these repositories are required to download the required build artifacts from 
+        these repositories. If user already have these repositories defined in their settings.xml 
+        these repositories definitions can be removed from this project -->
+        <repository>
+            <id>maven2-repo1</id>
+            <name>Maven2 Central Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
+            <id>download-java-net-maven2-repository</id>
+            <name>download.java.net Maven 2.x repository</name>
+            <url>http://download.java.net/maven/2/</url>
+        </repository>
+        <repository>
+            <id>maven-repository.dev.java.net-repository</id>
+            <url>https://maven-repository.dev.java.net/nonav/repository/</url>
+            <layout>legacy</layout>
+        </repository>
+        <repository>
+            <id>ws-zones</id>
+            <name>ws.zones maven repository</name>
+            <url>http://ws.zones.apache.org/repository2/</url>
+        </repository>
+        <repository>
+            <id>apache.org</id>
+            <name>Maven Snapshots</name>
+            <url>http://people.apache.org/repo/m2-snapshot-repository</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+            </snapshots>
+        </repository>      
+    </repositories>    
+    <pluginRepositories>
+        <pluginRepository>
+            <!-- requied to get the latest ant run plugin -->
+            <id>apache.org</id>
+            <name>Maven Plugin Snapshots</name>
+            <url>http://people.apache.org/repo/m2-snapshot-repository</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+    <dependencies>
+        <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant-nodeps</artifactId>
+            <version>1.6.5</version>
+        </dependency>
+        <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant-junit</artifactId>
+            <version>1.6.5</version>
+            <scope>test</scope>
+        </dependency>                        
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-ant-tasks</artifactId>
+            <version>2.0.7</version>
+        </dependency>        
+        <dependency>
+            <groupId>open-esb.jbi-cdk</groupId>
+            <artifactId>jbi-cdk-ant-tasks</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>                
+        <dependency>
+            <groupId>open-esb</groupId>
+            <artifactId>jbi</artifactId>
+            <version>1.0</version>
+        </dependency>        
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+            <version>1.6.2</version>
+        </dependency>        
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <version>2.1.2</version>
+            <scope>test</scope>
+        </dependency>        
+    </dependencies>  
+    <properties>
+        <!--
+         ! Note - the order of these declarations is unimportant.
+        -->
+        <localRepository>${maven.repo.local}</localRepository>
+    </properties>
+    
+</project>

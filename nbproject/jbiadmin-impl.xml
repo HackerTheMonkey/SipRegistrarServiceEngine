@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="jbiadmin-impl" default="jbi_component_admin-help" basedir=".." xmlns:jbi="http://www.sun.com/ns/jbi/jbi-ant/1" >
+    <description>Install, uninstall, reinstall, start, stop, shutdown jbi components.</description>
+    
+    <!-- 
+    ======================
+    INITIALIZATION SECTION 
+    ======================
+    -->
+    
+    <target name="-init-admin-setup" depends="init" >
+        <!--    
+        jbi properties that are set in project.properties file    
+        <property name="jbi.install.file" location="${dist.jar}" />
+        <property name="jbi.deploy.file" location="../testSA/${dist.jar}" />
+        <property name="jbi.component.name" value="${jbi.component.name}" />
+        <property name="jbi.host" location="localhost" />
+        <property name="jbi.port" value="8686" />
+        <property name="jbi.username" value="admin" />
+        <property name="jbi.password" value="adminadmin" />        
+        -->
+        <property name="jbi.task.fail.on.error" value="true" />                                           
+        <!-- jbi admin ant script settings -->
+        <property name="jbi.admin.xml" location="nbproject/jbi_admin.xml" />
+        
+    </target>
+    
+    <target name="-init-admin-setup-check" >
+        <!--
+        <fail unless="jbi.as.home">Must set jbi.as.home</fail>
+        -->
+        <fail unless="jbi.host">Must set jbi.host</fail>
+        <fail unless="jbi.port">Must set jbi.port</fail>
+        <fail unless="jbi.username">Must set jbi.username</fail>
+        <fail unless="jbi.password">Must set jbi.password</fail>
+    </target>
+            
+    <target name="-init-macrodef-jbi-admin">        
+        <macrodef name="jbi-admin" uri="http://www.sun.com/ns/jbi/jbi-ant/1">
+            <attribute name="target"/>
+            <attribute name="host" default="${jbi.host}"/>
+            <attribute name="port" default="${jbi.port}"/>
+            <attribute name="username" default="${jbi.username}"/>
+            <attribute name="password" default="${jbi.password}"/>            
+            <attribute name="failOnError" default="true"/>
+            <element name="target-options" optional="true"/>
+            <sequential>
+                <ant inheritAll="false" dir="${basedir}" antfile="${jbi.admin.xml}">
+                    <property name="jbi.ant.tasks.classpath" value="${jbi.ant.tasks.classpath}"/>
+                    <property name="jbi.host" value="@{host}"/>
+                    <property name="jbi.port" value="@{port}"/>
+                    <property name="jbi.username" value="@{username}"/>
+                    <property name="jbi.password" value="@{password}"/>
+                    <property name="jbi.task.fail.on.error" value="@{failOnError}"/>
+                    <target-options/>
+                    <target name="@{target}"/>
+                </ant>
+            </sequential>
+        </macrodef>        
+        
+    </target>
+    
+    <target name="-admin-setup" depends="init, -init-admin-setup, -init-admin-setup-check, -init-macrodef-jbi-admin" />
+        
+    
+    <!-- 
+    ================================
+    COMPONENT ADMINISTRATION SECTION 
+    ================================
+    -->
+    
+    <target name="start" depends="init, -admin-setup" >
+        <jbi:jbi-admin target="start-component"  failOnError="${jbi.task.fail.on.error}" >
+            <target-options>
+                <property name="jbi.component.name" value="${jbi.component.name}" />
+            </target-options>
+        </jbi:jbi-admin>
+    </target>
+    
+    <target name="stop" depends="init, -admin-setup" >
+        <jbi:jbi-admin target="stop-component"  failOnError="${jbi.task.fail.on.error}" >
+            <target-options>
+                <property name="jbi.component.name" value="${jbi.component.name}" />
+            </target-options>
+        </jbi:jbi-admin>
+    </target>
+    
+    <target name="shutdown" depends="init, -admin-setup" >
+        <jbi:jbi-admin target="shut-down-component"  failOnError="${jbi.task.fail.on.error}" >
+            <target-options>
+                <property name="jbi.component.name" value="${jbi.component.name}" />
+            </target-options>
+        </jbi:jbi-admin>
+    </target>
+    
+    <target name="forced-shutdown" depends="init, -admin-setup" >
+        <jbi:jbi-admin target="shut-down-component"  failOnError="${jbi.task.fail.on.error}" >
+            <target-options>
+                <property name="jbi.component.name" value="${jbi.component.name}" />
+                <property name="jbi.force.task" value="true" />
+            </target-options>
+        </jbi:jbi-admin>
+    </target>    
+        
+    <target name="-do-install-without-params" depends="init, jar, -admin-setup" unless="do.install.with.params">    
+            
+        <jbi:jbi-admin target="install-component" >
+            <target-options>
+                <property name="jbi.install.file" location="${dist.jar}" />
+            </target-options>
+        </jbi:jbi-admin>
+       
+        <antcall target="start" >
+             <param name="jbi.task.fail.on.error" value="false" />
+        </antcall>
+        
+    </target>
+
+    <target name="-do-install-with-params" depends="init, jar, -admin-setup" if="do.install.with.params">    
+            
+        <jbi:jbi-admin target="install-component" >
+            <target-options>
+                <property name="jbi.install.file" location="${dist.jar}" />
+                <property name="jbi.install.params.file" location="${jbi.install.params.file}" />
+            </target-options>
+        </jbi:jbi-admin>
+       
+        <antcall target="start" >
+             <param name="jbi.task.fail.on.error" value="false" />
+        </antcall>
+        
+    </target>
+    
+    <target name="-init-install-component" depends="init, -admin-setup" >
+        <condition property="do.install.with.params">
+            <istrue value="${jbi.install.with.params}"/>
+        </condition>
+    </target>
+    
+    <target name="install" depends="init, jar, -admin-setup, -init-install-component, -do-install-without-params, -do-install-with-params" />                
+    
+    <target name="uninstall" depends="init, -admin-setup" >
+
+        <antcall target="stop" >
+             <param name="jbi.task.fail.on.error" value="false" />
+        </antcall>
+
+        <antcall target="shutdown" >
+             <param name="jbi.task.fail.on.error" value="false" />
+        </antcall>
+        
+        <jbi:jbi-admin target="uninstall-component"  failOnError="${jbi.task.fail.on.error}" >
+            <target-options>
+                <property name="jbi.component.name" value="${jbi.component.name}" />
+            </target-options>
+        </jbi:jbi-admin>
+        
+    </target>
+    
+    <target name="forced-uninstall" depends="init, -admin-setup, -do-forced-undeploy-test-sa" >
+
+        <antcall target="stop" >
+             <param name="jbi.task.fail.on.error" value="false" />
+        </antcall>
+
+        <antcall target="forced-shutdown" >
+             <param name="jbi.task.fail.on.error" value="false" />
+        </antcall>
+        
+        <jbi:jbi-admin target="uninstall-component"  failOnError="${jbi.task.fail.on.error}" >
+            <target-options>
+                <property name="jbi.component.name" value="${jbi.component.name}" />
+                <property name="jbi.force.task" value="true" />
+            </target-options>
+        </jbi:jbi-admin>
+        
+    </target>
+    
+    
+    <target name="-reinstall-setup" depends="init" >
+        <property name="jbi.task.fail.on.error" value="false" />
+    </target>
+    
+    <target name="re-install" depends="init, -reinstall-setup, -admin-setup, stop, shutdown, uninstall, install" />
+
+    <target name="upgrade" depends="init, -admin-setup" >
+
+        <antcall target="stop" >
+             <param name="jbi.task.fail.on.error" value="false" />
+        </antcall>
+
+        <antcall target="shutdown" >
+             <param name="jbi.task.fail.on.error" value="false" />
+        </antcall>
+        
+        <jbi:jbi-admin target="upgrade-component"  failOnError="${jbi.task.fail.on.error}" >
+            <target-options>
+                <property name="jbi.component.name" value="${jbi.component.name}" />
+                <property name="jbi.install.file" location="${dist.jar}" />
+            </target-options>
+        </jbi:jbi-admin>
+        
+    </target>
+    
+    <!-- 
+    ===============================
+    TEST DEPLOYMENT ADMINISTRATION
+    ===============================
+    -->    
+    
+    <target name="-init-test-deploy" depends="init, -admin-setup, -do-test-deploy-check" >
+        <!-- test service assembly build directory -->
+        <property name="project.testSA.build.dir" location="${build.test.dir}/${testSA.name}" />
+        <!-- test SA zip file -->
+        <property name="reference.testSA.zip" location="${project.testSA.build.dir}/${testSA.name}.zip" />        
+    </target>
+    
+    <target name="-do-test-deploy-check" depends="init, -admin-setup">
+    </target>
+        
+    <target name="build-test-sa" depends="init, -init-test-deploy, -do-test-deploy-check" >
+        <ant target="package" inheritall="false" antfile="${project.testSA}/build.xml">
+            <property name="service.assembly.name" value="${testSA.name}" />
+            <property name="build.dir" location="${project.testSA.build.dir}" />
+            <!-- TODO: Supporting old sa build properties. remove it for new code -->
+            <property name="sa.build.dir" location="${project.testSA.build.dir}" />
+            <property name="sa.name" value="${testSA.name}" />
+            <!-- TODO: -->
+        </ant>
+    </target>
+    
+    <target name="clean-test-sa" depends="init, -init-test-deploy, -do-test-deploy-check" >
+        <ant target="clean" inheritall="false" antfile="${project.testSA}/build.xml">
+            <property name="service.assembly.name" value="${testSA.name}" />
+            <property name="build.dir" location="${project.testSA.build.dir}" />
+            <!-- TODO: Supporting old sa build properties. remove it for new code -->
+            <property name="sa.build.dir" location="${project.testSA.build.dir}" />
+            <property name="sa.name" value="${testSA.name}" />
+            <!-- TODO: -->
+        </ant>
+    </target>
+    
+    <target name="run-deploy-test-sa" if="testSA.enabled" >
+        <antcall inheritall="true" target="deploy-test-sa" />
+    </target>
+
+    <target name="run-undeploy-test-sa" if="testSA.enabled" >
+        <antcall inheritall="true" target="undeploy-test-sa" />
+    </target>
+    
+    <target name="deploy-test-sa"  depends="init, -init-test-deploy, build-test-sa, start-test-components, -do-deploy-test-sa">        
+    </target>
+    
+    <target name="undeploy-test-sa" depends="init, -init-test-deploy, -do-undeploy-test-sa ">               
+    </target>
+    
+    <target name="-do-deploy-test-sa" depends="init, -init-test-deploy, build-test-sa">
+        <!-- Deploy test SA -->
+        <property name="testSA.zip" location="${reference.testSA.zip}" />      
+        <jbi:jbi-admin target="deploy-service-assembly">
+            <target-options>
+                <property name="jbi.deploy.file" value="${testSA.zip}" />
+            </target-options>
+        </jbi:jbi-admin>
+        <!-- Start test SA -->
+        <jbi:jbi-admin target="start-service-assembly" >
+            <target-options>
+                <property name="jbi.service.assembly.name" value="${testSA.name}" />
+            </target-options>
+        </jbi:jbi-admin>
+        <!-- Show test SA -->
+        <jbi:jbi-admin target="list-service-assemblies" failOnError="false" >
+            <target-options>
+                <property name="jbi.service.assembly.name" value="${testSA.name}" />
+            </target-options>
+        </jbi:jbi-admin>        
+    </target>
+    
+    <target name="-do-undeploy-test-sa" depends="init, -init-test-deploy">
+        <jbi:jbi-admin target="stop-service-assembly" >
+            <target-options>
+                <property name="jbi.service.assembly.name" value="${testSA.name}" />
+            </target-options>
+        </jbi:jbi-admin>
+        <jbi:jbi-admin target="shut-down-service-assembly" >
+            <target-options>
+                <property name="jbi.service.assembly.name" value="${testSA.name}" />                
+            </target-options>
+        </jbi:jbi-admin>
+        <jbi:jbi-admin target="undeploy-service-assembly">
+            <target-options>
+                <property name="jbi.service.assembly.name" value="${testSA.name}" />
+            </target-options>
+        </jbi:jbi-admin>        
+    </target>
+    <!-- used in forced uninstall -->
+    <target name="-do-forced-undeploy-test-sa" depends="init, -init-test-deploy">
+        <jbi:jbi-admin target="stop-service-assembly" failOnError="false" >
+            <target-options>
+                <property name="jbi.service.assembly.name" value="${testSA.name}" />
+            </target-options>
+        </jbi:jbi-admin>
+        <jbi:jbi-admin target="shut-down-service-assembly" failOnError="false" >
+            <target-options>
+                <property name="jbi.service.assembly.name" value="${testSA.name}" />
+                <property name="jbi.force.task" value="true" />
+            </target-options>
+        </jbi:jbi-admin>
+        <jbi:jbi-admin target="undeploy-service-assembly" failOnError="false">
+            <target-options>
+                <property name="jbi.service.assembly.name" value="${testSA.name}" />
+                <property name="jbi.force.task" value="true" />                
+            </target-options>
+        </jbi:jbi-admin>        
+    </target>
+    
+        
+    <target name="start-test-components" depends="init, -init-test-deploy" >
+        <jbi:jbi-admin target="start-component" failOnError="false" >
+            <target-options>
+                <property name="jbi.component.name" value="${jbi.component.name}" />
+            </target-options>
+        </jbi:jbi-admin>
+        <jbi:jbi-admin target="start-component"  failOnError="false" >
+            <target-options>
+                <property name="jbi.component.name" value="${jbi.soap.binding.name}" />
+            </target-options>
+        </jbi:jbi-admin>        
+    </target>    
+    
+    <target name="jbi-runtime-info" depends="init, -admin-setup" >
+        <jbi:jbi-admin target="list-all" >
+        </jbi:jbi-admin>        
+    </target>
+    
+</project>

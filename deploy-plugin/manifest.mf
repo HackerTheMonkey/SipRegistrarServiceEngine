@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: sipregistrarserviceengine
+OpenIDE-Module-Layer: sipregistrarserviceengine/layer.xml
+OpenIDE-Module-Localizing-Bundle: sipregistrarserviceengine/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

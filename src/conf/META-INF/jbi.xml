@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--
+    Document   : jbi.xml
+    Created on : August 10, 2010, 10:25 PM
+    Author     : hasanein
+    Description: JBI Component installation descriptor.
+-->
+<jbi version="1.0"
+     xmlns="http://java.sun.com/xml/ns/jbi"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    
+    <component type="service-engine" 
+               component-class-loader-delegation="parent-first"
+               bootstrap-class-loader-delegation="parent-first"
+    >
+        <identification>
+            <name>SipRegistrarServiceEngine</name>
+            <description>Description of service engine : SipRegistrarServiceEngine</description>
+        </identification>
+        <!-- FQN of the implementation class for javax.jbi.component.Component interface -->
+        <component-class-name >sipregistrarserviceengine.ProviderSERuntime</component-class-name>
+        <!-- component runtime classpath for component execution classloader -->
+        <component-class-path>
+            <path-element>com.orange.uklab.mockse.main.BootstrapImpl</path-element>
+            <!-- include the libraries path elements packaged in the zip archive file -->
+            <path-element>lib/wsdl4j-1.6.2.jar</path-element>
+        </component-class-path>
+        <!-- FQN of the implementation class for javax.jbi.component.Bootstrap interface -->
+        <bootstrap-class-name>com.orange.uklab.mockse.main.ComponentImpl</bootstrap-class-name>
+        <!-- component installation time classpath for component bootstrap classloader -->
+        <bootstrap-class-path>
+            <path-element>component.jar</path-element>
+            <!-- include the libraries path elements packaged in the zip archive file -->
+            <path-element>lib/wsdl4j-1.6.2.jar</path-element>
+        </bootstrap-class-path>
+        <!-- jbi shared libraries this component is dependent on. The classpaths of these
+             shared libraries will be available to component runtime classloader -->
+        <!--
+            <shared-library>sun-wsdl-library</shared-library>
+        -->        
+    </component>
+</jbi>

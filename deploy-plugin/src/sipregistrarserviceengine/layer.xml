@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="SOA">
+                <file name="SipRegistrarServiceEngineJBIModule.xml" url="/sipregistrarserviceengine/project/resources/se-jbi-module.xml">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="sipregistrarserviceengine.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/sipregistrarserviceengine/project/resources/projectIcon.png"/>
+                    <attr name="instantiatingIterator" methodvalue="sipregistrarserviceengine.project.wizard.SEPluginProjectWizardIterator.createIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/sipregistrarserviceengine/project/wizard/SEPluginProjectDescription.html"/>
+                    <attr name="templateCategory" stringvalue="jbi-se-plugin-prj-types"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="JbiComponents">
+        <!-- JBI Component -->
+        <file name="SipRegistrarServiceEngine">
+            <attr name="id" stringvalue="SipRegistrarServiceEngine"/>
+            <attr name="type" stringvalue="Engine"/>
+            <attr name="description" stringvalue="Description of service engine : SipRegistrarServiceEngine"/>
+        </file>
+    </folder>
+    
+</filesystem>
+

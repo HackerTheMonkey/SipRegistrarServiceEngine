@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- NOTE: this file is only used from pom.xml to build the netbeans project 
+from Maven2 build lifecycle.  -->
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<project name="m2nbbuild" default="default" basedir=".">
+    <description>This project compile, package and test the JBI Components when invoked from Maven2.</description>
+    <import file="m2nbbuild-impl.xml"/>
+    <!--
+
+    There exist some targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of updating the n2nbbuild.properties file before lauching the 
+    netbeans build to set the user level properties like jbi.as.home etc from
+    the environment variables could look like this:
+
+        <target name="-pre-init">
+            <property environment="env"/>
+            <propertyfile file="m2build.properties" >
+                <entry  key="jbi.as.home" value="${env.AS_INSTALL}"/>
+            </propertyfile>
+        </target>
+        
+    --> 
+    
+</project>

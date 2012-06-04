@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2004-2005 Sun Microsystems Inc., All Rights Reserved.
+-->
+<!--
+@author chikkala
+-->
+<project basedir="." default="help" name="jbi_admin" >
+<description>
+This ant script contains the jbi ant tasks and the targets and properties using 
+which the jbi admin commands can be performed.
+</description>
+    <target name="-init-jbiadmin-taskdefs" >        
+        <!-- jbi ant task definitions  -->
+        <!-- BEGIN - Jbi Ant Task definitions -->
+        <!-- jbi component tasks definitions  -->
+        <taskdef name="jbi-install-component" classname="com.sun.jbi.ui.ant.JbiInstallComponentTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-uninstall-component" classname="com.sun.jbi.ui.ant.JbiUninstallComponentTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-start-component" classname="com.sun.jbi.ui.ant.JbiStartComponentTask"  classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-stop-component" classname="com.sun.jbi.ui.ant.JbiStopComponentTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-shut-down-component" classname="com.sun.jbi.ui.ant.JbiShutdownComponentTask" classpath="${jbi.ant.tasks.classpath}" />
+        <!-- jbi shared library task definitions -->
+        <taskdef name="jbi-install-shared-library" classname="com.sun.jbi.ui.ant.JbiInstallSharedLibraryTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-uninstall-shared-library" classname="com.sun.jbi.ui.ant.JbiUninstallSharedLibraryTask" classpath="${jbi.ant.tasks.classpath}" />
+        <!-- jbi service assembly deployment tasks definitions -->
+        <taskdef name="jbi-deploy-service-assembly" classname="com.sun.jbi.ui.ant.JbiDeployServiceAssemblyTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-undeploy-service-assembly" classname="com.sun.jbi.ui.ant.JbiUndeployServiceAssemblyTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-start-service-assembly" classname="com.sun.jbi.ui.ant.JbiStartServiceAssemblyTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-stop-service-assembly" classname="com.sun.jbi.ui.ant.JbiStopServiceAssemblyTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-shut-down-service-assembly" classname="com.sun.jbi.ui.ant.JbiShutdownServiceAssemblyTask" classpath="${jbi.ant.tasks.classpath}" />
+        <!-- jbi query tasks definitions -->
+        <taskdef name="jbi-list-service-engines" classname="com.sun.jbi.ui.ant.JbiListServiceEnginesTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-list-binding-components" classname="com.sun.jbi.ui.ant.JbiListBindingComponentsTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-list-shared-libraries" classname="com.sun.jbi.ui.ant.JbiListSharedLibrariesTask" classpath="${jbi.ant.tasks.classpath}" />
+        <taskdef name="jbi-list-service-assemblies" classname="com.sun.jbi.ui.ant.JbiListServiceAssembliesTask" classpath="${jbi.ant.tasks.classpath}" />
+        <!-- END - Jbi Ant Task definitions -->    
+        
+        <available property="jbi.upgrade.comp.available" classname="com.sun.jbi.ui.ant.JbiUpgradeComponentTask" classpath="${jbi.ant.tasks.classpath}" />
+        
+    </target>
+    
+    <target name="-init-jbiadmin-target-properties" >
+        <!-- properties used as attribute values for ant tasks -->
+    
+        <!-- default username. command line args may override this value. -->
+        <property name="jbi.username" value="admin" />
+        <!-- default password. command line args may override this value. -->
+        <property name="jbi.password" value="adminadmin" />
+        <!-- default host. command line args may override this value. -->
+        <property name="jbi.host" value="localhost" />    
+        <!-- default port. command line args may override this value. -->
+        <property name="jbi.port" value="8686" />
+        
+        <!-- default value for throwing build exception on task failure. 
+        command line args may override this value-->
+        <property name="jbi.task.fail.on.error" value="true" />
+        
+        <!-- default value for forcing the task to complete the work even under error condition.
+         this option is being used in the shut-down-component to change the component's state
+         to shutdown even under error conditions.
+         command line args may override this value-->
+        <property name="jbi.force.task" value="false" />
+        
+        <!-- default component state value. null or empty for any component state in query tasks -->
+        <property name="jbi.component.state" value="" />
+        
+        <!-- default service assembly state value. null or empty for any service assembly state in query tasks -->
+        <property name="jbi.service.assembly.state" value="" />
+        
+        <!-- default component name value. null or empty for no component dependency in query tasks where either
+        service engine or binding component name can be specified -->
+        <property name="jbi.component.name" value="" />
+        
+        <!-- default service engine name value. null or empty for no service engine name in list-service-engines query task -->
+        <property name="jbi.service.engine.name" value="" />
+        
+        <!-- default binding component name value. null or empty for no binding component name in list-binding-components query task -->
+        <property name="jbi.binding.component.name" value="" />
+        
+        <!-- default shared library name value. null or empty for no shared library dependency in query tasks -->
+        <property name="jbi.shared.library.name" value="" />
+        
+        <!-- default service assembly name value. null or empty for no service assembly dependency in query tasks-->
+        <property name="jbi.service.assembly.name" value="" />
+        
+        <!--
+        installer file attribute value. set using command line args.
+        <property name="jbi.install.file" value="mydir/my_comp/installer.zip" />
+        
+        for name/value installation configuration parameters in a file.
+        set using command line args.
+        <property name="jbi.install.params.file" value="mydir/my_comp/params.properties" />
+        
+        deployment file attribute value. set using command line args.
+        <property name="jbi.deploy.file" value="mydir/my_comp/serviec-assembly.zip" />
+        
+        this property should exist to display the list task output in xml text.
+        Note that the value of the property is not important. 
+        If the property exists, the list tasks displays the output in xml text. 
+        If not exists, the list tasks display the results in a formatted plain text.
+        This property may be set using command line args. 
+        <property name="jbi.list.xml.output" value="xml" />
+        
+        When user sets this ("jbi.list.xml.output" ) property, the list task output
+        will be saved as xml text into the property "jbi.list.output" for display.
+        Note that the "jbi.list.output" should not be set as ant user property ( with -D option )
+        
+        -->
+    </target>
+    
+    <target name="-init-jbiadmin" depends="-init-jbiadmin-taskdefs, -init-jbiadmin-target-properties" ></target>
+    
+    <!-- Install targets -->
+    <!-- this target should not be called from out side the install target -->
+    <target  name="-install-component-without-params" unless="jbi.install.params.file"
+    description="Installs service engine or binding component with installation parameters">
+        <echo message ="Installing a component" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  file=${jbi.install.file}" />
+        <jbi-install-component 
+            username="${jbi.username}" password="${jbi.password}"             
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            file="${jbi.install.file}" 
+         />
+    </target>
+    
+    <!-- this target should not be called from out side the install target -->
+    <target  name="-install-component-with-params" if="jbi.install.params.file"
+    description="Installs Service Engine or Binding Component without installtion parameters">
+        <echo message ="Installing a component" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  file=${jbi.install.file}" />
+        <jbi-install-component 
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}" 
+            file="${jbi.install.file}" 
+            failOnError="${jbi.task.fail.on.error}"
+            params="${jbi.install.params.file}"
+         />
+    </target>
+    
+    <!-- main install target for installing a component -->
+    <target  name="install-component" depends="-init-jbiadmin, -install-component-without-params, -install-component-with-params" 
+    description="Installs service engine or binding component">
+    </target>
+
+    <target  name="-upgrade-with-upgrade-comp" depends="-init-jbiadmin" if="jbi.upgrade.comp.available"
+    description="Upgrade service engine or binding component">
+        <taskdef name="jbi-upgrade-component" classname="com.sun.jbi.ui.ant.JbiUpgradeComponentTask" classpath="${jbi.ant.tasks.classpath}" />
+        <echo message ="Upgrading a component" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.component.name}" />
+        <echo message ="  file=${jbi.install.file}" />
+        <jbi-upgrade-component 
+            username="${jbi.username}" password="${jbi.password}"             
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            name="${jbi.component.name}"
+            file="${jbi.install.file}" 
+         />        
+    </target>
+
+    <target  name="-upgrade-with-update-comp" depends="-init-jbiadmin" unless="jbi.upgrade.comp.available"
+    description="Upgrade service engine or binding component">
+        <taskdef name="jbi-update-component" classname="com.sun.jbi.ui.ant.JbiUpdateComponentTask" classpath="${jbi.ant.tasks.classpath}" />
+        <echo message ="Updating a component" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.component.name}" />
+        <echo message ="  file=${jbi.install.file}" />
+        <jbi-update-component 
+            username="${jbi.username}" password="${jbi.password}"             
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            name="${jbi.component.name}"
+            file="${jbi.install.file}" 
+         />        
+    </target>
+    
+    <target  name="upgrade-component" depends="-init-jbiadmin, -upgrade-with-upgrade-comp, -upgrade-with-update-comp" 
+    description="Upgrade service engine or binding component">
+    </target>
+    
+    
+    <!-- install target for installing a shared library -->
+    <target  name="install-shared-library" depends="-init-jbiadmin" 
+    description="Installs shared library">
+        <echo message ="Installing a shared library" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  file=${jbi.install.file}" />
+        <jbi-install-shared-library 
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}" 
+            failOnError="${jbi.task.fail.on.error}"
+            file="${jbi.install.file}"
+         />
+    </target>
+        
+    <!-- uninstall target for uninstalling a component -->
+    <target  name="uninstall-component" depends="-init-jbiadmin"  
+    description="Uninstalls service engine or binding component">
+        <echo message ="Uninstalling a component" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.component.name}" />
+        <jbi-uninstall-component 
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}" 
+            failOnError="${jbi.task.fail.on.error}"
+            name="${jbi.component.name}" 
+        />
+    </target>
+    
+    <!-- uninstall target for uninstalling a shared library -->
+    <target  name="uninstall-shared-library" depends="-init-jbiadmin"  
+    description="Uninstalls shared library">
+        <echo message ="Uninstalling a shared library" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.shared.library.name}" />
+        <jbi-uninstall-shared-library
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}" 
+            failOnError="${jbi.task.fail.on.error}"
+            name="${jbi.shared.library.name}" 
+        />
+    </target>
+    
+    <!-- start component target -->
+    <target  name="start-component"  depends="-init-jbiadmin" 
+    description="Starts service engine or binding component">
+        <echo message ="Starting a component" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.component.name}" />
+        <jbi-start-component 
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}" 
+            failOnError="${jbi.task.fail.on.error}"
+            name="${jbi.component.name}" 
+        />
+    </target>
+    
+    <!-- stop component target -->
+    <target  name="stop-component"  depends="-init-jbiadmin" 
+    description="Stops service engine or binding component">
+        <echo message ="Stopping a component" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.component.name}" />
+        <jbi-stop-component 
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            name="${jbi.component.name}" 
+        />
+    </target>
+
+    <!-- shutdown component target -->
+    <target  name="shut-down-component"  depends="-init-jbiadmin" 
+    description="shuts down service engine or binding component">
+        <echo message ="Shutting down a component" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.component.name}" />
+        <jbi-shut-down-component 
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}" 
+            failOnError="${jbi.task.fail.on.error}" 
+            force="${jbi.force.task}" 
+            name="${jbi.component.name}" 
+         />
+    </target>
+    
+    <!-- deployment targets -->    
+    <!-- deploy service assembly target -->
+    <target name="deploy-service-assembly"  depends="-init-jbiadmin" 
+    description="Deploys Service assembly">
+        <echo message ="Deploying a service assembly" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  file=${jbi.deploy.file}" />
+        <jbi-deploy-service-assembly 
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            file="${jbi.deploy.file}" 
+         />
+    </target>
+    
+    <!-- undeploy service assembly target -->
+    <target  name="undeploy-service-assembly"  depends="-init-jbiadmin" 
+    description="Undeploys service assembly">
+        <echo message ="Undeploying a service assembly" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.service.assembly.name}" />
+        <jbi-undeploy-service-assembly 
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            name="${jbi.service.assembly.name}" 
+        />
+    </target>
+    
+    <!-- start service assembly target -->    
+    <target  name="start-service-assembly" depends="-init-jbiadmin" 
+    description="starts service assembly">
+        <echo message ="Starting a service assembly" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.service.assembly.name}" />
+        <jbi-start-service-assembly
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            name="${jbi.service.assembly.name}" 
+         />
+    </target>
+    
+    <!-- stop service assembly target -->    
+    <target  name="stop-service-assembly" depends="-init-jbiadmin" 
+    description="stops service assembly">
+        <echo message ="Stopping a service assembly" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.service.assembly.name}" />
+        <jbi-stop-service-assembly
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            name="${jbi.service.assembly.name}" 
+         />
+    </target>
+
+    <!-- shutdown service assembly target -->
+    <target  name="shut-down-service-assembly" depends="-init-jbiadmin" 
+    description="shuts down service assembly">
+        <echo message ="Shutting down a service assembly" />
+        <echo message ="  jmx connection info: (host=${jbi.host}, port=${jbi.port}, username=${jbi.username})" />
+        <echo message ="  name=${jbi.service.assembly.name}" />
+        <jbi-shut-down-service-assembly
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            name="${jbi.service.assembly.name}" 
+         />
+    </target>
+    
+    
+    <!-- Query targets -->
+    <!-- lists info on the service engines -->
+    <target name="-list-service-engines-in-xml-ouput" if="jbi.list.xml.output"
+    description="List Service Engines in xml text output" >
+        <jbi-list-service-engines
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            serviceEngineName="${jbi.service.engine.name}"
+            state="${jbi.component.state}" 
+            sharedLibraryName="${jbi.shared.library.name}" 
+            serviceAssemblyName="${jbi.service.assembly.name}"
+            xmlOutput="jbi.list.output"
+        />
+        <echo message="${jbi.list.output}" />
+    </target>
+        
+    <target  name="-list-service-engines-in-text-output" unless="jbi.list.xml.output"
+    description="List Service Engines in formatted plain text">
+        <jbi-list-service-engines
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            serviceEngineName="${jbi.service.engine.name}"
+            state="${jbi.component.state}" 
+            sharedLibraryName="${jbi.shared.library.name}" 
+            serviceAssemblyName="${jbi.service.assembly.name}"
+        />
+    </target>
+    
+    <target  name="list-service-engines" 
+    description="List Service Engines"
+    depends="-init-jbiadmin, -list-service-engines-in-xml-ouput, 
+               -list-service-engines-in-text-output"
+    />
+    
+    <!-- lists info on the binding components -->
+    <target name="-list-binding-components-in-xml-ouput" if="jbi.list.xml.output"
+    description="List Binding Components ">
+        <jbi-list-binding-components
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            bindingComponentName="${jbi.binding.component.name}"
+            state="${jbi.component.state}" 
+            sharedLibraryName="${jbi.shared.library.name}" 
+            serviceAssemblyName="${jbi.service.assembly.name}"
+            xmlOutput="jbi.list.output"
+        />
+        <echo message="${jbi.list.output}" />
+    </target>
+    
+    <target name="-list-binding-components-in-text-output" unless="jbi.list.xml.output"
+    description="List Binding Components ">
+        <jbi-list-binding-components
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            bindingComponentName="${jbi.binding.component.name}"
+            state="${jbi.component.state}" 
+            sharedLibraryName="${jbi.shared.library.name}" 
+            serviceAssemblyName="${jbi.service.assembly.name}"
+        />
+    </target>
+        
+    <target name="list-binding-components" 
+    description="List Binding Components"
+    depends="-init-jbiadmin, -list-binding-components-in-xml-ouput,
+             -list-binding-components-in-text-output"
+    />
+    
+    <!-- lists info on the shared libraries -->
+    <target name="-list-shared-libraries-in-xml-ouput" if="jbi.list.xml.output"
+    description="List Shared Libraries">
+        <jbi-list-shared-libraries
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            sharedLibraryName="${jbi.shared.library.name}"
+            componentName="${jbi.component.name}"
+            xmlOutput="jbi.list.output"
+        />
+        <echo message="${jbi.list.output}" />
+    </target>
+    
+    <target name="-list-shared-libraries-in-text-output" unless="jbi.list.xml.output"
+    description="List Shared Libraries">
+        <jbi-list-shared-libraries
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}"
+            failOnError="${jbi.task.fail.on.error}"
+            sharedLibraryName="${jbi.shared.library.name}"
+            componentName="${jbi.component.name}"
+        />
+    </target>
+    
+    <target name="list-shared-libraries" 
+    description="List Shared Libraries"
+    depends="-init-jbiadmin, -list-shared-libraries-in-xml-ouput,
+             -list-shared-libraries-in-text-output"
+    />
+        
+    
+    <!-- lists info on the service assemblies deployed -->
+    <target name="-list-service-assemblies-in-xml-ouput" if="jbi.list.xml.output"
+    description="List Service Assemblies">
+        <jbi-list-service-assemblies
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}" 
+            failOnError="${jbi.task.fail.on.error}" 
+            serviceAssemblyName="${jbi.service.assembly.name}"
+            state="${jbi.service.assembly.state}"
+            componentName="${jbi.component.name}"
+            xmlOutput="jbi.list.output"
+        />
+        <echo message="${jbi.list.output}" />
+    </target>
+    
+    <target name="-list-service-assemblies-in-text-output" unless="jbi.list.xml.output"
+    description="List Service Assemblies">
+        <jbi-list-service-assemblies
+            username="${jbi.username}" password="${jbi.password}" 
+            host="${jbi.host}" port="${jbi.port}" 
+            failOnError="${jbi.task.fail.on.error}" 
+            serviceAssemblyName="${jbi.service.assembly.name}"
+            state="${jbi.service.assembly.state}"
+            componentName="${jbi.component.name}"
+        />
+    </target>
+        
+    <target name="list-service-assemblies" 
+    description="List Service Assemblies"
+    depends="-init-jbiadmin, -list-service-assemblies-in-xml-ouput,
+             -list-service-assemblies-in-text-output"
+    />
+    
+    
+    <!-- undocumented target : calls all the query tasks -->
+    <target  name="list-all" 
+    description="List Details about All Components and Deployments "
+    depends = "list-service-engines,
+               list-binding-components,
+               list-shared-libraries,
+               list-service-assemblies " >
+    </target>            
+    
+<!-- help target -->
+<target name="usage" depends="help" />
+<target name="help" description="Help information">
+<echo>
+
+Usage : ant -f &lt;fullpath&gt;/jbi_admin.xml [options] [target]
+  options: -D&lt;property&gt;=&lt;value&gt;  
+    Specify a property/value pairs as options that are valid for the target.
+  target : ant target name in jbi_admin.xml
+
+</echo>
+</target>
+    
+</project>

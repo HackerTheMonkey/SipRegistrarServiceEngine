@@ -1,0 +1,89 @@
+<definitions name="Greetings"
+             targetNamespace="http://www.sun.com/jbi/examples/sample-service/greetings/"    
+             xmlns:tns="http://www.sun.com/jbi/examples/sample-service/greetings/"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+             xmlns:greet="http://www.sun.com/jbi/examples/sample-service/greetings/types/" >
+    
+    <types>
+        <xsd:schema 
+        targetNamespace="http://www.sun.com/jbi/examples/sample-service/greetings/types/"
+        xmlns:greet="http://www.sun.com/jbi/examples/sample-service/greetings/types/" 
+        elementFormDefault="qualified" >
+            <xsd:element name="user" type="greet:UserType"/>
+            <xsd:element name="hello" type="greet:GreetingsType"/>
+            <xsd:element name="goodbye" type="greet:GreetingsType"/>            
+            <xsd:complexType name="UserType">
+                <xsd:sequence>
+                    <xsd:element name="first-name" type="xsd:string"/>
+                    <xsd:element name="last-name" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>                        
+            <xsd:complexType name="GreetingsType">
+                <xsd:sequence>
+                    <xsd:element name="first-name" type="xsd:string"/>
+                    <xsd:element name="last-name" type="xsd:string"/>
+                    <xsd:element name="greetings" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType> 
+        </xsd:schema>
+    </types>
+    
+    <message name="userMessage">
+        <part name="userPart"  element="greet:user" />
+    </message>
+    
+    <message name="helloMessage">
+        <part name="helloPart" element="greet:hello" />
+    </message>
+
+    <message name="goodbyeUserMessage">
+        <part name="userPart"  type="greet:UserType" />
+    </message>
+    
+    <message name="goodbyeMessage">          
+        <part name="goodbyePart"  element="greet:goodbye" />             
+    </message>
+    
+    
+    <portType name="greetings">
+        <operation name="sayHello">
+            <input name="sayHelloInput" message="tns:userMessage"></input>
+            <output name="sayHelloOutput" message="tns:helloMessage"></output>
+        </operation>
+        <operation name="sayGoodbye">
+            <input name="sayGoodbyeInput" message="tns:goodbyeUserMessage"></input>
+            <output name="sayGoodbyeOutput" message="tns:goodbyeMessage"></output>
+        </operation>        
+    </portType>
+        
+    <binding name="Binding" type="tns:greetings">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="sayHello">
+            <soap:operation soapAction="sayHello" />
+            <input name="sayHelloInput">
+                <soap:body use="literal"/>
+            </input>
+            <output name="sayHelloOutput">
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        <operation name="sayGoodbye">
+            <soap:operation  soapAction="sayGoodbye" />
+            <input name="sayGoodbyeInput">
+                <soap:body use="literal"/>
+            </input>
+            <output name="sayGoodbyeOutput">
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+    
+    <service name="greetService">
+        <port name="port" binding="tns:Binding">
+            <soap:address location="http://localhost:12010//SipRegistrarServiceEngine/greetings"/>
+        </port>
+    </service>
+    
+</definitions>
